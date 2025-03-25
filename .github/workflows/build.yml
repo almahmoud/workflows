@@ -189,6 +189,12 @@ jobs:
         with:
           name: package-source
           path: .
+      - name: Get Current Job Log URL
+        id: jobid
+        uses: Tiryoh/gha-jobid-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          job_name: Build R-${{ matrix.r }} for Linux
       - name: "Build package for Linux"
         uses: r-universe-org/actions/linux-build@v6
         timeout-minutes: 60
@@ -205,6 +211,8 @@ jobs:
           GITHUB_PAT: ${{secrets.GITHUB_TOKEN}}
         with:
           sourcepkg: ${{ needs.source.outputs.sourcepkg }}
+      - name: Test URL
+        run: echo "extracted URL: ${{ steps.jobid.outputs.html_url }}"
       - name: "Store binaries"
         uses: r-universe-org/actions/store-package@v6
         if: ${{ always() && steps.check.outputs.binarypkg }}
@@ -216,6 +224,7 @@ jobs:
           FILE: ${{ steps.check.outputs.binarypkg }}
           CHECKSTATUS: ${{ steps.check.outputs.checkstatus }}
           TARGET: 'linux'
+          JOB_URL: ${{ steps.jobid.outputs.html_url }}
 
   wasm:
     needs: [prepare, source]
